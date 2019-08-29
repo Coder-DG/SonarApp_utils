@@ -7,15 +7,15 @@ SAMPLE_RATE = 44100
 
 def show_cross_correlation(number):
     ccorrelation_file = 'samples/cross_correlation_of_' + str(number)
-    show_graph(ccorrelation_file)
+    return get_graph_figure(ccorrelation_file)
 
 
 def show_recording(number):
     recording_file = 'samples/recording_of_' + str(number)
-    show_graph(recording_file)
+    return get_graph_figure(recording_file)
 
 
-def show_graph(file_name):
+def get_graph_figure(file_name):
     plt.grid(True, axis='y')
     fig = plt.figure()
     ax = fig.add_axes([0, 0, 1, 1])
@@ -24,7 +24,7 @@ def show_graph(file_name):
         data = json.load(f)
         y = list(int(n) for n in data['data'])
     start_y = 0
-    for i in y:
+    for i in range(len(y)):
         if y[i] == 0:
             start_y += 1
         else:
@@ -35,14 +35,4 @@ def show_graph(file_name):
     ax.set_xlabel('Sample #')
     ax.set_ylabel('Amplitude')
     ax.set_title(file_name)
-    fig.show()
-
-
-def main():
-    for i in range(1, 64):
-        show_recording(i)
-        show_cross_correlation(i)
-
-
-if __name__ == '__main__':
-    main()
+    return fig
