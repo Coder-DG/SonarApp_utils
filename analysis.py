@@ -50,7 +50,7 @@ def get_graph_figure(y, title):
 
     plt.grid(True, axis='y')
     fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1])
+    ax = fig.add_axes([0, 0, 2, 1])
     ax.set_xlabel('Sample #')
     ax.set_ylabel('Amplitude')
     ax.set_title(title)
