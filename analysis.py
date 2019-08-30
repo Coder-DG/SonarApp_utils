@@ -4,7 +4,23 @@ import matplotlib.pyplot as plt
 
 CHIRP_DURATION = 0.01
 SAMPLE_RATE = 44100
+F_START = 4000
+F_END = 8000
 
+
+def get_chirp():
+    k = (F_END - F_START) / CHIRP_DURATION
+    chirp = np.ndarray((int(np.ceil(CHIRP_DURATION * SAMPLE_RATE)) + 1,))
+    inc = 1.0 / SAMPLE_RATE
+    t = 0.0
+    for i in range(len(chirp)):
+        if t > CHIRP_DURATION:
+            break
+        chirp[i] = np.sin(2.0 * np.pi * (F_START * t + 0.5 * k * t ** 2))
+        t += inc
+
+    hanning = np.hanning(len(chirp))
+    return chirp * hanning
 
 def show_cross_correlation(number):
     ccorrelation_file = 'samples/cross_correlation_of_' + str(number)

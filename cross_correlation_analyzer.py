@@ -22,10 +22,10 @@ def trim_recording(recording):
 
 
 def main():
-    recording = load_recording()
-    recording = trim_recording(recording)
+    data = load_recording()
+    data = trim_recording(data)
 
-    return recording
+    return data
 
 
 if __name__ == '__main__':
