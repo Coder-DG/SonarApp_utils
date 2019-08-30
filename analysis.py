@@ -10,7 +10,8 @@ F_END = 8000
 
 def get_chirp():
     k = (F_END - F_START) / CHIRP_DURATION
-    chirp = np.ndarray((int(np.ceil(CHIRP_DURATION * SAMPLE_RATE)) + 1,))
+    chirp_size = int(np.ceil(CHIRP_DURATION * SAMPLE_RATE)) + 1
+    chirp = np.ndarray(shape=(chirp_size,))
     inc = 1.0 / SAMPLE_RATE
     t = 0.0
     for i in range(len(chirp)):
