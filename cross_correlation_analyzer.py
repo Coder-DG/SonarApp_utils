@@ -3,8 +3,8 @@ import numpy as np
 
 import analysis
 
-SAMPLE_NUMBER = 16
-RECORDING_FILE_PATH = 'samples/recording_of_{0]'
+SAMPLE_NUMBER = 15
+RECORDING_FILE_PATH = 'samples/recording_of_{0}'
 
 
 def load_recording(sample_number):
@@ -27,7 +27,7 @@ def calc_cross_correlation(data):
     data = np.array(data)
     data_fft = np.fft.fft(data)
     chirp_fft = np.fft.fft(chirp, n=len(data))
-    return np.fft.ifft(data_fft * chirp_fft)
+    return np.abs(np.fft.ifft(data_fft * chirp_fft))
 
 
 def main(sample_number):
