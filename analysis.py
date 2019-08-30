@@ -20,8 +20,8 @@ def show_recording(number):
         data = json.load(f)['data']
     y = list(int(n) for n in data)
     argmax = np.argmax(y)
-    start_y = int(max(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5),
-                      0))
+    start_y = max(int(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5)),
+                  0)
     y = y[start_y:]
     return get_graph_figure(y, recording_file)
 
