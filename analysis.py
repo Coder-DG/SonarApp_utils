@@ -30,7 +30,7 @@ def show_cross_correlation(number):
     with open(ccorrelation_file, 'r') as f:
         data = json.load(f)['data']
     y = list(float(n) for n in data)
-    y = y[:len(y) / 2]
+    y = y[:len(y) // 2]
     return get_graph_figure(y, ccorrelation_file)
 
 
