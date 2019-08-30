@@ -6,6 +6,7 @@ CHIRP_DURATION = 0.01
 SAMPLE_RATE = 44100
 F_START = 4000
 F_END = 8000
+JAVA_SHORT_MAX = 32767
 
 
 def get_chirp():
@@ -20,8 +21,9 @@ def get_chirp():
         chirp[i] = np.sin(2.0 * np.pi * (F_START * t + 0.5 * k * t ** 2))
         t += inc
 
-    hanning = np.hanning(len(chirp))
-    return chirp * hanning
+    chirp *= np.hanning(len(chirp))
+    return chirp * np.full((chirp_size,), JAVA_SHORT_MAX)
+
 
 def show_cross_correlation(number):
     ccorrelation_file = 'samples/cross_correlation_of_' + str(number)
