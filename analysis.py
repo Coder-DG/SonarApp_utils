@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 CHIRP_DURATION = 0.01
 SAMPLE_RATE = 44100
-F_START = 4000
+F_START = 8000
 F_END = 8000
 JAVA_SHORT_MAX = 32767
 

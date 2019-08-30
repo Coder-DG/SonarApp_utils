@@ -3,12 +3,12 @@ import numpy as np
 
 import analysis
 
-SAMPLE_NUMBER = 50
-RECORDING_FILE_PATH = 'samples/recording_of_' + str(SAMPLE_NUMBER)
+SAMPLE_NUMBER = 16
+RECORDING_FILE_PATH = 'samples/recording_of_{0]'
 
 
-def load_recording():
-    with open(RECORDING_FILE_PATH, 'r') as f:
+def load_recording(sample_number):
+    with open(RECORDING_FILE_PATH.format(sample_number), 'r') as f:
         return json.load(f)['data']
 
 
@@ -30,12 +30,12 @@ def calc_cross_correlation(data):
     return np.fft.ifft(data_fft * chirp_fft)
 
 
-def main():
-    data = load_recording()
+def main(sample_number):
+    data = load_recording(sample_number)
     data = trim_recording(data)
     data = calc_cross_correlation(data)
     return data
 
 
 if __name__ == '__main__':
-    main()
+    main(SAMPLE_NUMBER)
