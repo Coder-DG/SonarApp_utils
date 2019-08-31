@@ -56,5 +56,5 @@ def get_graph_figure(y, title, markers=None):
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
     plt.xticks(rotation=90)
-    ax.plot(x, y, '-gD', markevery=markers)
+    ax.plot(x, y, markevery=markers)
     return fig
