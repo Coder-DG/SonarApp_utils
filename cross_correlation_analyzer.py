@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from scipy import signal
 
 import analysis
 
@@ -30,11 +31,16 @@ def calc_cross_correlation(data):
     return np.abs(np.fft.ifft(data_fft * chirp_fft))
 
 
+def calc_cross_correlation_scipy(data):
+    chirp = analysis.get_chirp()
+    data = np.array(data)
+    return np.abs(signal.hilbert(signal.fftconvolve(chirp, data)))
+
+
 def main(sample_number):
     data = load_recording(sample_number)
     data = trim_recording(data)
-    data = calc_cross_correlation(data)
-    return data
+    return calc_cross_correlation(data), calc_cross_correlation_scipy(data)
 
 
 if __name__ == '__main__':
