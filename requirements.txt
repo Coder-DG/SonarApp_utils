@@ -3,3 +3,4 @@ numpy
 matplotlib
 simpleaudio
 jupyterlab
+scipy
