@@ -16,6 +16,7 @@ def get_data():
     tag = data.get('tag')
     if not tag:
         return {"Response": 400}
+    print(tag)
     with open(os.path.join(SAMPLES_DIR, tag), 'w') as f:
         json.dump(data, f)
     return {"Response": 200}
