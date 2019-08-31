@@ -45,7 +45,7 @@ def show_recording(number):
     return get_graph_figure(y, recording_file)
 
 
-def get_graph_figure(y, title):
+def get_graph_figure(y, title, markers=None):
     x = list(range(len(y)))
 
     plt.grid(True, axis='y')
@@ -56,5 +56,5 @@ def get_graph_figure(y, title):
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
     plt.xticks(rotation=90)
-    ax.plot(x, y)
+    ax.plot(x, y, '-gD', markevery=markers)
     return fig

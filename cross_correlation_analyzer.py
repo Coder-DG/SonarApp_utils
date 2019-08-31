@@ -6,10 +6,16 @@ import analysis
 
 SAMPLE_NUMBER = 15
 RECORDING_FILE_PATH = 'samples/recording_of_{0}'
+CC_FILE_PATH = 'samples/cross_correlation_of_{0}'
 
 
 def load_recording(sample_number):
     with open(RECORDING_FILE_PATH.format(sample_number), 'r') as f:
+        return json.load(f)['data']
+
+
+def load_cc(sample_number):
+    with open(CC_FILE_PATH.format(sample_number), 'r') as f:
         return json.load(f)['data']
 
 
@@ -37,10 +43,17 @@ def calc_cross_correlation_scipy(data):
     return np.abs(signal.hilbert(signal.fftconvolve(chirp, data)))
 
 
+def get_derivative(data):
+    return np.diff(data)
+
+
 def main(sample_number):
     data = load_recording(sample_number)
     data = trim_recording(data)
-    return calc_cross_correlation(data), calc_cross_correlation_scipy(data)
+    # data_numpy = calc_cross_correlation(data)
+    data_scipy = calc_cross_correlation_scipy(data)
+    sample_cc = load_cc(sample_number)
+    return data_scipy, get_derivative(data_scipy), get_derivative(sample_cc)
 
 
 if __name__ == '__main__':
