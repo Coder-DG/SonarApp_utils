@@ -9,6 +9,8 @@ F_END = 8000
 JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 10.0 / BASE_SOUND_SPEED))
+RECORDING_FILE_PATH = 'samples/recording_of_{0}'
+CC_FILE_PATH = 'samples/cross_correlation_of_{0}'
 
 
 def get_chirp():
@@ -27,24 +29,34 @@ def get_chirp():
     return chirp * np.full((chirp_size,), JAVA_SHORT_MAX)
 
 
+def load_cc(number):
+    with open(CC_FILE_PATH.format(number), 'r') as f:
+        return json.load(f)['data']
+
+
 def show_cross_correlation(number):
-    ccorrelation_file = 'samples/cross_correlation_of_' + str(number)
-    with open(ccorrelation_file, 'r') as f:
-        data = json.load(f)['data']
+    data = load_cc(number)
     y = list(float(n) for n in data)
-    return get_graph_figure(y, ccorrelation_file)
+    return get_graph_figure(y, CC_FILE_PATH.format(number))
+
+
+def trim(recording):
+    argmax = np.argmax(recording)
+    start = max(int(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5)),
+                0)
+    return recording[start:CUT_OFF + start]
+
+
+def load_recording(number):
+    with open(RECORDING_FILE_PATH.format(number), 'r') as f:
+        return json.load(f)['data']
 
 
 def show_recording(number):
-    recording_file = 'samples/recording_of_' + str(number)
-    with open(recording_file, 'r') as f:
-        data = json.load(f)['data']
+    data = load_recording(number)
     y = np.array(list(int(n) for n in data))
-    argmax = np.argmax(y)
-    start_y = max(int(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5)),
-                  0)
-    y = y[start_y:CUT_OFF + start_y]
-    return get_graph_figure(y, recording_file)
+    y = trim(y)
+    return get_graph_figure(y, RECORDING_FILE_PATH.format(number))
 
 
 def get_graph_figure(y, title, markers=None):
