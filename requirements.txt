@@ -1,0 +1,6 @@
+Flask
+numpy
+matplotlib
+simpleaudio
+jupyterlab
+scipy
