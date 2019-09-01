@@ -25,12 +25,7 @@ def get_derivative(data):
 
 
 def main(sample_number):
-    data = analysis.load_recording(sample_number)
-    data = analysis.trim(data)
-    # data_numpy = calc_cross_correlation(data)
-    data_scipy = calc_cross_correlation_scipy(data)
-    sample_cc = analysis.trim(analysis.load_cc(sample_number))
-    return data_scipy, get_derivative(data_scipy), get_derivative(sample_cc)
+    return analysis.trim(analysis.load_cc(sample_number))
 
 
 if __name__ == '__main__':

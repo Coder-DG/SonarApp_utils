@@ -1,4 +1,6 @@
 import json
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,8 +11,7 @@ F_END = 8000
 JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 10.0 / BASE_SOUND_SPEED))
-RECORDING_FILE_PATH = 'samples/recording_of_{0}'
-CC_FILE_PATH = 'samples/cross_correlation_of_{0}'
+SAMPLES_DIR = 'samples'
 
 
 def get_chirp():
@@ -29,15 +30,23 @@ def get_chirp():
     return chirp * np.full((chirp_size,), JAVA_SHORT_MAX)
 
 
+def load_sample(number):
+    with open(os.path.join(SAMPLES_DIR, str(number)), 'r') as f:
+        return json.load(f)
+
+
 def load_cc(number):
-    with open(CC_FILE_PATH.format(number), 'r') as f:
-        return json.load(f)['data']
+    return load_sample(number)['cc']
+
+
+def load_recording(number):
+    return load_sample(number)['recording']
 
 
 def show_cross_correlation(number):
     data = load_cc(number)
     y = list(float(n) for n in data)
-    return get_graph_figure(y, CC_FILE_PATH.format(number))
+    return get_graph_figure(y, 'CC of {0}'.format(number))
 
 
 def trim(recording):
@@ -47,16 +56,11 @@ def trim(recording):
     return recording[start:CUT_OFF + start]
 
 
-def load_recording(number):
-    with open(RECORDING_FILE_PATH.format(number), 'r') as f:
-        return json.load(f)['data']
-
-
 def show_recording(number):
     data = load_recording(number)
     y = np.array(list(int(n) for n in data))
     y = trim(y)
-    return get_graph_figure(y, RECORDING_FILE_PATH.format(number))
+    return get_graph_figure(y, 'Recording of {0}'.format(number))
 
 
 def get_graph_figure(y, title, markers=None):
@@ -70,5 +74,8 @@ def get_graph_figure(y, title, markers=None):
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
     plt.xticks(rotation=90)
-    ax.plot(x, y, markevery=markers)
+    if not markers:
+        ax.plot(x, y)
+    else:
+        ax.plot(x, y, '-gD', markevery=markers)
     return fig

@@ -13,11 +13,11 @@ app = Flask(__name__)
 @app.route('/', methods=['POST'])
 def get_data():
     data = request.json
-    tag = data.get('tag')
-    if not tag:
+    cycle = data.get('cycle')
+    if not cycle:
         return {"Response": 400}
-    print(tag)
-    with open(os.path.join(SAMPLES_DIR, tag), 'w') as f:
+    print('Sample: {}'.format(cycle))
+    with open(os.path.join(SAMPLES_DIR, cycle), 'w') as f:
         json.dump(data, f)
     return {"Response": 200}
 
