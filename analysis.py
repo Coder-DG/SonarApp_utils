@@ -7,6 +7,7 @@ SAMPLE_RATE = 44100
 F_START = 8000
 F_END = 8000
 JAVA_SHORT_MAX = 32767
+RECORDING_NOISE_THRESHOLD = 10
 
 
 def get_chirp():
@@ -38,10 +39,11 @@ def show_recording(number):
     with open(recording_file, 'r') as f:
         data = json.load(f)['data']
     y = list(int(n) for n in data)
+    end_y = np.where(y > RECORDING_NOISE_THRESHOLD)[0][-1]
     argmax = np.argmax(y)
     start_y = max(int(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5)),
                   0)
-    y = y[start_y:]
+    y = y[start_y:end_y + 1]
     return get_graph_figure(y, recording_file)
 
 
