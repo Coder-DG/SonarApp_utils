@@ -38,7 +38,7 @@ def show_recording(number):
     recording_file = 'samples/recording_of_' + str(number)
     with open(recording_file, 'r') as f:
         data = json.load(f)['data']
-    y = list(int(n) for n in data)
+    y = np.array(list(int(n) for n in data))
     end_y = np.where(y > RECORDING_NOISE_THRESHOLD)[0][-1]
     argmax = np.argmax(y)
     start_y = max(int(np.floor(argmax - CHIRP_DURATION * SAMPLE_RATE * 0.5)),
