@@ -12,6 +12,7 @@ JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 10.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
+PREFIX = 'david_living_room_'
 
 
 def get_chirp():
@@ -31,7 +32,7 @@ def get_chirp():
 
 
 def load_sample(number):
-    with open(os.path.join(SAMPLES_DIR, str(number)), 'r') as f:
+    with open(os.path.join(SAMPLES_DIR, PREFIX + str(number)), 'r') as f:
         return json.load(f)
 
 
