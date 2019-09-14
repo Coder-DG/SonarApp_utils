@@ -15,11 +15,16 @@ SAMPLE_RATE = 44100
 F_START = 8000
 F_END = 8000
 JAVA_SHORT_MAX = 32767
-BASE_SOUND_SPEED = 331
+BASE_SOUND_SPEED = 331.3
+SOUND_SPEED_COEF = 0.606
 # CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 10.0 / BASE_SOUND_SPEED))
 CUT_OFF = 3546
 SAMPLES_DIR = 'samples'
-PREFIX = 'davidlivingroom_1m_'
+PREFIX = 'david_porch_2m_'
+
+
+def get_speed_of_sound(temp):
+    return BASE_SOUND_SPEED + SOUND_SPEED_COEF * temp
 
 
 def get_chirp():
