@@ -2,13 +2,15 @@
 # instead of the export function so that we write the weights and bias to a file
 
 # David: no need to copy it, just replace it like this:
-# from sklearn_porter import Porter
+# from sklearn.neural_network import MLPClassifier
 # from MLPClassifierAdjust import export
-# Porter.export = export
+# MLPClassifier.export = export
+import os
+
 import json
 
 
-def export(self, class_name=None, method_name=None, export_data=False,
+def export(self, class_name, method_name, export_data=False,
            export_dir='.', export_filename='data.json',
            export_append_checksum=False, **kwargs):
     """
@@ -34,6 +36,7 @@ def export(self, class_name=None, method_name=None, export_data=False,
     :return : string
         The transpiled algorithm with the defined placeholders.
     """
+    print("Started exporting...")
     # Arguments:
     self.class_name = class_name
     self.method_name = method_name
@@ -67,7 +70,7 @@ def export(self, class_name=None, method_name=None, export_data=False,
         f.write(',')
         json.dump(self.coefficients[1].tolist(), f)
         f.write(']')
-
+    print("Exported MLPWeights.txt")
     # Bias:
     self.intercepts = est.intercepts_
 
@@ -77,7 +80,7 @@ def export(self, class_name=None, method_name=None, export_data=False,
         f.write(',')
         json.dump(self.intercepts[1].tolist(), f)
         f.write(']')
-
+    print("Exported MLPbias.txt")
     # Binary or multiclass classifier?
     self.is_binary = self.n_outputs == 1
     self.prefix = 'binary' if self.is_binary else 'multi'

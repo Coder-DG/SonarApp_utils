@@ -178,6 +178,7 @@ if __name__ == '__main__':
 
     labels = [distances_to_labels[distance] for distance in distances]
 
+    MLPClassifier.export = export
     clf = MLPClassifier(solver='lbfgs',
                         hidden_layer_sizes=500,
                         alpha=1e-05,
@@ -186,10 +187,9 @@ if __name__ == '__main__':
     clf.fit(cross_correlations, labels)
 
     print("Exporting weights...")
-    Porter.export = export
     porter = Porter(clf, language='java')
     java_code = porter.export()
-    
+
     print("Writing JAVA code to file...")
     with open('MLPClassifier.java', 'w') as f:
         f.write(java_code)
