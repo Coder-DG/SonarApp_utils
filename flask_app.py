@@ -4,6 +4,7 @@ import json
 from flask import Flask, request
 
 SAMPLES_DIR = 'samples'
+FILE_FORMAT = "{0}.{1}.{2}"
 app = Flask(__name__)
 
 
@@ -14,10 +15,13 @@ app = Flask(__name__)
 def get_data():
     data = request.json
     cycle = data.get('cycle')
-    if not cycle:
+    real_distance = data.get('real_distance')
+    location = data.get('location')
+    if not (cycle and real_distance and location):
         return {"Response": 400}
-    print('Sample: {}'.format(cycle))
-    with open(os.path.join(SAMPLES_DIR, cycle), 'w') as f:
+    file_name = FILE_FORMAT.format(location, real_distance, cycle)
+    print('Got sample: {}'.format(file_name))
+    with open(os.path.join(SAMPLES_DIR, file_name), 'w') as f:
         json.dump(data, f)
     return {"Response": 200}
 

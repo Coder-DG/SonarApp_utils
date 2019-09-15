@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import json
 import pandas as pd
@@ -7,7 +8,6 @@ from sklearn_porter import Porter
 import numpy as np
 import matplotlib.pyplot as plt
 
-import cross_correlation_analyzer
 from MLPClassifierAdjust import export
 
 CHIRP_DURATION = 0.01
@@ -17,11 +17,10 @@ F_END = 8000
 JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331.3
 SOUND_SPEED_COEF = 0.606
-# CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 10.0 / BASE_SOUND_SPEED))
-CUT_OFF = 3546
+CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
 PREFIX = 'david_porch_2m_'
-
+PREDICTION_CLASSES_FILE_FORMAT = "prediction_classes_{0}"
 
 def get_speed_of_sound(temp):
     return BASE_SOUND_SPEED + SOUND_SPEED_COEF * temp
@@ -73,19 +72,17 @@ def load_samples():
 
 
 def get_training_data():
-    cross_correlations = []
+    _cross_correlations = []
     dst_labels = []
     for filename in os.listdir(SAMPLES_DIR):
         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
-            js = json.load(f)
-            line_data = js['cycle'].split('_')
-            recording = js['recording']
-            cc = cross_correlation_analyzer.calc_cross_correlation(
-                trim(recording))
-            cross_correlations.append(cc)
-            dst_labels.append(line_data[1])
+            sample = json.load(f)
+            dst_label = sample['real_distance']
+            cc = sample['cc']
+            _cross_correlations.append(cc)
+            dst_labels.append(dst_label)
 
-    return np.array(cross_correlations), np.array(dst_labels)
+    return np.array(_cross_correlations), np.array(dst_labels)
 
 
 def load_sample(number):
@@ -164,19 +161,22 @@ def get_graph_figure(y, title, markers=None):
     return fig
 
 
+def enumerate_distances(distances):
+    sorted_distances = sorted(set(distances))
+    return zip(sorted_distances, range(len(sorted_distances)))
+
+
 if __name__ == '__main__':
     print("Loading training data...")
     cross_correlations, distances = get_training_data()  # input cc
-    distances_to_labels = {
-        '1m': 0,
-        '2m': 1,
-        '3m': 2,
-        '4m': 3,
-        '2.9718m': 4,
-        '4.3307m': 5
-    }
 
-    labels = [distances_to_labels[distance] for distance in distances]
+    print("Enumerating distances...")
+    enumerated_distances = enumerate_distances(distances)
+
+    print("Writing enumerated distances to file...")
+    with open(PREDICTION_CLASSES_FILE_FORMAT.format(datetime.utcnow()),
+              'w') as f:
+        json.dump(enumerated_distances, f)
 
     MLPClassifier.export = export
     clf = MLPClassifier(solver='lbfgs',
@@ -184,7 +184,7 @@ if __name__ == '__main__':
                         alpha=1e-05,
                         random_state=1)
     print("Learning...")
-    clf.fit(cross_correlations, labels)
+    clf.fit(cross_correlations, enumerated_distances)
 
     print("Exporting weights...")
     porter = Porter(clf, language='java')
