@@ -1,7 +1,14 @@
 # this needs to be copied to sklearn_porter\estimator\classifier\MLPClassifier\__init__.py
 # instead of the export function so that we write the weights and bias to a file
 
-def export(self, class_name, method_name, export_data=False,
+# David: no need to copy it, just replace it like this:
+# from sklearn_porter import Porter
+# from MLPClassifierAdjust import export
+# Porter.export = export
+import json
+
+
+def export(self, class_name=None, method_name=None, export_data=False,
            export_dir='.', export_filename='data.json',
            export_append_checksum=False, **kwargs):
     """

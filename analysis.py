@@ -73,8 +73,8 @@ def load_samples():
 
 
 def get_training_data():
-    data = []
-    output = []
+    cross_correlations = []
+    dst_labels = []
     for filename in os.listdir(SAMPLES_DIR):
         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
             js = json.load(f)
@@ -82,10 +82,10 @@ def get_training_data():
             recording = js['recording']
             cc = cross_correlation_analyzer.calc_cross_correlation(
                 trim(recording))
-            data.append(cc)
-            output.append(line_data[1])
+            cross_correlations.append(cc)
+            dst_labels.append(line_data[1])
 
-    return np.array(data), np.array(output)
+    return np.array(cross_correlations), np.array(dst_labels)
 
 
 def load_sample(number):
@@ -116,7 +116,7 @@ def trim(recording):
 
 def calc_dist(correlation):
     arr = np.array(correlation)
-    peak_width = 0.01 * 44100
+    peak_width = CHIRP_DURATION * SAMPLE_RATE
     transmitted_peak_index = np.where(arr == np.amax(arr))[0][0]
     return_peak_index = transmitted_peak_index + 220
     for i in range(return_peak_index + 1,
@@ -134,8 +134,8 @@ def calc_dist(correlation):
     if return_peak_index == transmitted_peak_index + 220:
         return 0
 
-    time = (return_peak_index - transmitted_peak_index) * (1.0 / 44100)
-    return (331.3 + 0.6 * 23) * time / 2
+    time = (return_peak_index - transmitted_peak_index) * (1.0 / SAMPLE_RATE)
+    return get_speed_of_sound(temp=23) * time / 2
 
 
 def show_recording(number):
@@ -165,9 +165,9 @@ def get_graph_figure(y, title, markers=None):
 
 
 if __name__ == '__main__':
-    data_inputs = get_training_data()[0]  # input cc
-    data_outputs = get_training_data()[1]  # output
-    output_dictionary = {
+    print("Loading training data...")
+    cross_correlations, distances = get_training_data()  # input cc
+    distances_to_labels = {
         '1m': 0,
         '2m': 1,
         '3m': 2,
@@ -176,18 +176,20 @@ if __name__ == '__main__':
         '4.3307m': 5
     }
 
-    data_output = []
-    for i in range(len(data_outputs)):
-        data_output.append(output_dictionary[data_outputs[i]])
+    labels = [distances_to_labels[distance] for distance in distances]
 
     clf = MLPClassifier(solver='lbfgs',
                         hidden_layer_sizes=500,
                         alpha=1e-05,
                         random_state=1)
-    clf.fit(data_inputs, data_outputs)
+    print("Learning...")
+    clf.fit(cross_correlations, labels)
 
+    print("Exporting weights...")
     Porter.export = export
     porter = Porter(clf, language='java')
-    output = porter.export()
+    java_code = porter.export()
+    
+    print("Writing JAVA code to file...")
     with open('MLPClassifier.java', 'w') as f:
-        f.write(output)
+        f.write(java_code)
