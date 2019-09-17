@@ -47,7 +47,7 @@ def load_samples():
     for filename in os.listdir(SAMPLES_DIR):
         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
             js = json.load(f)
-            line_data = js['cycle'].split('_')
+            line_data = js['location'].split('_')
             cc = js['cc']
             line_data.append(calc_dist(cc))
             line_data.append(F_START)
@@ -171,20 +171,47 @@ if __name__ == '__main__':
     cross_correlations, distances = get_training_data()  # input cc
 
     print("Enumerating distances...")
-    enumerated_distances = enumerate_distances(distances)
+    enumerated_distances = dict(enumerate_distances(distances))
+
+    labels = []
+    for i in range(len(cross_correlations)):
+        labels.append(enumerated_distances[distances[i]])
+
+    cross_correlations_train, distances_train = [], []
+    cross_correlations_pred, distances_pred = [], []
+    for i in range(len(cross_correlations)):
+        if i % 4 != 0:
+            cross_correlations_train.append(cross_correlations[i])
+            distances_train.append(labels[i])
+        else:
+            cross_correlations_pred.append(cross_correlations[i])
+            distances_pred.append(labels[i])
+
 
     print("Writing enumerated distances to file...")
-    with open(PREDICTION_CLASSES_FILE_FORMAT.format(datetime.utcnow()),
-              'w') as f:
-        json.dump(enumerated_distances, f)
+    # with open(PREDICTION_CLASSES_FILE_FORMAT.format(datetime.utcnow()),'w') as f:
+    #     json.dump(enumerated_distances, f)
 
     MLPClassifier.export = export
     clf = MLPClassifier(solver='lbfgs',
-                        hidden_layer_sizes=500,
+                        hidden_layer_sizes=800,
                         alpha=1e-05,
-                        random_state=1)
+                        random_state=1,
+                        max_iter=1000)
     print("Learning...")
-    clf.fit(cross_correlations, enumerated_distances)
+    clf.fit(cross_correlations_train, distances_train)
+
+    labels_pred = clf.predict(cross_correlations_pred)
+
+    # labels_truth = labels[1: len(cross_correlations) - 1: 2]
+    num_flase = 0
+    for i in range(1, len(labels_pred)):
+        if distances_pred[i] != labels_pred[i]:
+            num_flase += 1
+
+    print("num false: ", num_flase)
+    print("num samples ", len(labels_pred))
+    print("percentage ", num_flase / len(labels_pred))
 
     print("Exporting weights...")
     porter = Porter(clf, language='java')
