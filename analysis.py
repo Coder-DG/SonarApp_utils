@@ -1,12 +1,12 @@
 import os
-from datetime import datetime
 
 import json
-import pandas as pd
-from sklearn.neural_network import MLPClassifier
-from sklearn_porter import Porter
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn_porter import Porter
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import train_test_split
 
 from MLPClassifierAdjust import export
 
@@ -21,6 +21,7 @@ CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
 PREFIX = 'david_porch_2m_'
 PREDICTION_CLASSES_FILE_FORMAT = "prediction_classes_{0}"
+
 
 def get_speed_of_sound(temp):
     return BASE_SOUND_SPEED + SOUND_SPEED_COEF * temp
@@ -161,30 +162,33 @@ def get_graph_figure(y, title, markers=None):
     return fig
 
 
-def enumerate_distances(distances):
-    sorted_distances = sorted(set(distances))
-    return zip(sorted_distances, range(len(sorted_distances)))
-
-
 if __name__ == '__main__':
+    rand_state = 1
     print("Loading training data...")
     cross_correlations, distances = get_training_data()  # input cc
+    # Convert distance to centimeters
+    distances_trimmed = np.array(
+        [int(10 * float(distance[:-1])) for distance in distances])
 
-    print("Enumerating distances...")
-    enumerated_distances = enumerate_distances(distances)
-
-    print("Writing enumerated distances to file...")
-    with open(PREDICTION_CLASSES_FILE_FORMAT.format(datetime.utcnow()),
-              'w') as f:
-        json.dump(enumerated_distances, f)
+    print("Splitting data to test and ")
+    cc_train, cc_test, dst_train, dst_test = train_test_split(
+        cross_correlations,
+        distances_trimmed,
+        test_size=0.3,
+        random_state=rand_state)
 
     MLPClassifier.export = export
     clf = MLPClassifier(solver='lbfgs',
-                        hidden_layer_sizes=500,
+                        hidden_layer_sizes=800,
                         alpha=1e-05,
-                        random_state=1)
+                        random_state=rand_state,
+                        max_iter=1000)
     print("Learning...")
-    clf.fit(cross_correlations, enumerated_distances)
+    clf.fit(cc_train, dst_train)
+
+    predicted_distances = np.array(clf.predict(cc_test))
+    test_score = np.mean(dst_test == predicted_distances)
+    print("Test score is {0:.2f}%".format(100 * test_score))
 
     print("Exporting weights...")
     porter = Porter(clf, language='java')
