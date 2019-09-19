@@ -2,7 +2,7 @@ import os
 
 import json
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn_porter import Porter
 from sklearn.neural_network import MLPClassifier as MLP
@@ -46,33 +46,33 @@ def get_chirp():
     return chirp * np.full((chirp_size,), JAVA_SHORT_MAX)
 
 
-def load_samples():
-    data = []
-    for filename in os.listdir(SAMPLES_DIR):
-        with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
-            js = json.load(f)
-            line_data = js['cycle'].split('_')
-            cc = js['cc']
-            line_data.append(calc_dist(cc))
-            line_data.append(F_START)
-            line_data.append(F_END)
-            line_data.append(SAMPLE_RATE)
-            line_data.append(CHIRP_DURATION)
-            data.append(line_data)
-
-    df = pd.DataFrame(
-        data,
-        columns=[
-            'name',
-            'distance',
-            'id',
-            'calc_dist',
-            'f_start',
-            'f_end',
-            'sample_rate',
-            'chirp_duration']
-    )
-    print(df)
+# def load_samples():
+#     data = []
+#     for filename in os.listdir(SAMPLES_DIR):
+#         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
+#             js = json.load(f)
+#             line_data = js['cycle'].split('_')
+#             cc = js['cc']
+#             line_data.append(calc_dist(cc))
+#             line_data.append(F_START)
+#             line_data.append(F_END)
+#             line_data.append(SAMPLE_RATE)
+#             line_data.append(CHIRP_DURATION)
+#             data.append(line_data)
+#
+#     df = pd.DataFrame(
+#         data,
+#         columns=[
+#             'name',
+#             'distance',
+#             'id',
+#             'calc_dist',
+#             'f_start',
+#             'f_end',
+#             'sample_rate',
+#             'chirp_duration']
+#     )
+#     print(df)
 
 
 def get_training_data():
@@ -146,22 +146,24 @@ def show_recording(number):
     return get_graph_figure(y, 'Recording of {0}'.format(number))
 
 
-def get_graph_figure(y, title, markers=None):
-    x = list(range(len(y)))
+def get_graph_figure(y, title, markers=None, x=None, fig=None):
+    if not x:
+        x = list(range(len(y)))
 
     plt.grid(True, axis='y')
-    fig = plt.figure()
+    if not fig:
+        fig = plt.figure()
     ax = fig.add_axes([0, 0, 2, 1])
     ax.set_xlabel('Sample #')
     ax.set_ylabel('Amplitude')
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.xticks(rotation=90)
     if not markers:
         ax.plot(x, y)
     else:
         ax.plot(x, y, '-gD', markevery=markers)
-    plt.show()
     return fig
 
 
