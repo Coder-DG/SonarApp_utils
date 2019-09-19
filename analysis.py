@@ -5,8 +5,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn_porter import Porter
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier as MLP
 from sklearn.model_selection import train_test_split
+
+from sklearn_porter.estimator.classifier import MLPClassifier \
+    as MLPClassifierBase
 
 from MLPClassifierAdjust import export
 
@@ -177,12 +180,13 @@ if __name__ == '__main__':
         test_size=0.3,
         random_state=rand_state)
 
-    MLPClassifier.export = export
-    clf = MLPClassifier(solver='lbfgs',
-                        hidden_layer_sizes=800,
-                        alpha=1e-05,
-                        random_state=rand_state,
-                        max_iter=1000)
+    MLPClassifierBase.MLPClassifier.export = export
+
+    clf = MLP(solver='lbfgs',
+              hidden_layer_sizes=800,
+              alpha=1e-05,
+              random_state=rand_state,
+              max_iter=1000)
     print("Learning...")
     clf.fit(cc_train, dst_train)
 
