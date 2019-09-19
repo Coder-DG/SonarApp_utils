@@ -1,10 +1,3 @@
-# this needs to be copied to sklearn_porter\estimator\classifier\MLPClassifier\__init__.py
-# instead of the export function so that we write the weights and bias to a file
-
-# David: no need to copy it, just replace it like this:
-# from sklearn.neural_network import MLPClassifier
-# from MLPClassifierAdjust import export
-# MLPClassifier.export = export
 import os
 
 import json
