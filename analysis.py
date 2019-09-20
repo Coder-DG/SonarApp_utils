@@ -22,8 +22,7 @@ BASE_SOUND_SPEED = 331.3
 SOUND_SPEED_COEF = 0.606
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
-PREFIX = 'david_porch_2m_'
-PREDICTION_CLASSES_FILE_FORMAT = "prediction_classes_{0}"
+PREFIX = 'david_garage_test_location.3.0m.'
 
 
 def get_speed_of_sound(temp):

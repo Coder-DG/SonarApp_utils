@@ -7,15 +7,17 @@ SAMPLE_NUMBER = 15
 
 
 def get_distances(cc, threshold=2e9):
-    peaks = list(signal.find_peaks(
+    speed_of_sound = analysis.get_speed_of_sound(25)
+    peaks, _ = signal.find_peaks(
         cc,
         height=threshold,
-        distance=int(analysis.CHIRP_DURATION * analysis.SAMPLE_RATE * 0.5))[0])
+        distance=int(analysis.CHIRP_DURATION * analysis.SAMPLE_RATE))
+    peaks = list(peaks)
+    if len(peaks) <= 1:
+        return None, speed_of_sound, None, peaks
     time_delta = (peaks[1] - peaks[0]) / analysis.SAMPLE_RATE
-    speed_of_sound = analysis.get_speed_of_sound(25)
     distance = time_delta * speed_of_sound / 2.0
     return time_delta, speed_of_sound, distance, peaks
-
 
 
 def calc_cross_correlation_scipy(recording, chirp=analysis.get_chirp()):
