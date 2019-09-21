@@ -1,26 +1,29 @@
 import os
-from datetime import datetime
 
 import json
-import pandas as pd
-from sklearn.neural_network import MLPClassifier
-from sklearn_porter import Porter
 import numpy as np
+# import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn_porter import Porter
+from sklearn.neural_network import MLPClassifier as MLP
+from sklearn.model_selection import train_test_split
+
+from sklearn_porter.estimator.classifier import MLPClassifier \
+    as MLPClassifierBase
 
 from MLPClassifierAdjust import export
 
 CHIRP_DURATION = 0.01
 SAMPLE_RATE = 44100
-F_START = 8000
-F_END = 8000
+F_START = 3000
+F_END = F_START
 JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331.3
 SOUND_SPEED_COEF = 0.606
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
-PREFIX = 'david_porch_2m_'
-PREDICTION_CLASSES_FILE_FORMAT = "prediction_classes_{0}"
+PREFIX = 'david_garage_test_location.0.0m.'
+
 
 def get_speed_of_sound(temp):
     return BASE_SOUND_SPEED + SOUND_SPEED_COEF * temp
@@ -42,33 +45,33 @@ def get_chirp():
     return chirp * np.full((chirp_size,), JAVA_SHORT_MAX)
 
 
-def load_samples():
-    data = []
-    for filename in os.listdir(SAMPLES_DIR):
-        with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
-            js = json.load(f)
-            line_data = js['location'].split('_')
-            cc = js['cc']
-            line_data.append(calc_dist(cc))
-            line_data.append(F_START)
-            line_data.append(F_END)
-            line_data.append(SAMPLE_RATE)
-            line_data.append(CHIRP_DURATION)
-            data.append(line_data)
-
-    df = pd.DataFrame(
-        data,
-        columns=[
-            'name',
-            'distance',
-            'id',
-            'calc_dist',
-            'f_start',
-            'f_end',
-            'sample_rate',
-            'chirp_duration']
-    )
-    print(df)
+# def load_samples():
+#     data = []
+#     for filename in os.listdir(SAMPLES_DIR):
+#         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
+#             js = json.load(f)
+#             line_data = js['cycle'].split('_')
+#             cc = js['cc']
+#             line_data.append(calc_dist(cc))
+#             line_data.append(F_START)
+#             line_data.append(F_END)
+#             line_data.append(SAMPLE_RATE)
+#             line_data.append(CHIRP_DURATION)
+#             data.append(line_data)
+#
+#     df = pd.DataFrame(
+#         data,
+#         columns=[
+#             'name',
+#             'distance',
+#             'id',
+#             'calc_dist',
+#             'f_start',
+#             'f_end',
+#             'sample_rate',
+#             'chirp_duration']
+#     )
+#     print(df)
 
 
 def get_training_data():
@@ -142,76 +145,61 @@ def show_recording(number):
     return get_graph_figure(y, 'Recording of {0}'.format(number))
 
 
-def get_graph_figure(y, title, markers=None):
-    x = list(range(len(y)))
+def get_graph_figure(y, title, markers=None, x=None, fig=None):
+    if not x:
+        x = list(range(len(y)))
 
     plt.grid(True, axis='y')
-    fig = plt.figure()
+    if not fig:
+        fig = plt.figure()
     ax = fig.add_axes([0, 0, 2, 1])
     ax.set_xlabel('Sample #')
     ax.set_ylabel('Amplitude')
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.xticks(rotation=90)
     if not markers:
         ax.plot(x, y)
     else:
         ax.plot(x, y, '-gD', markevery=markers)
-    plt.show()
     return fig
 
 
-def enumerate_distances(distances):
-    sorted_distances = sorted(set(distances))
-    return zip(sorted_distances, range(len(sorted_distances)))
-
-
 if __name__ == '__main__':
+    rand_state = 1
     print("Loading training data...")
     cross_correlations, distances = get_training_data()  # input cc
+    # Convert distance to centimeters
+    distances_trimmed = np.array(
+        [int(10 * float(distance[:-1])) for distance in distances])
 
-    print("Enumerating distances...")
-    enumerated_distances = dict(enumerate_distances(distances))
+    print("Splitting data to test and ")
+    print("pad the cross correlations to the same length")
+    longest_cc = max(len(i) for i in cross_correlations)
+    padded_cross_correlations = []
+    for cc in cross_correlations:
+        padded_cross_correlations.append(cc + [0]*(longest_cc - len(cc)))
 
-    labels = []
-    for i in range(len(cross_correlations)):
-        labels.append(enumerated_distances[distances[i]])
+    cc_train, cc_test, dst_train, dst_test = train_test_split(
+        padded_cross_correlations,
+        distances_trimmed,
+        test_size=0.20,
+        random_state=rand_state)
 
-    cross_correlations_train, distances_train = [], []
-    cross_correlations_pred, distances_pred = [], []
-    for i in range(len(cross_correlations)):
-        if i % 4 != 0:
-            cross_correlations_train.append(cross_correlations[i])
-            distances_train.append(labels[i])
-        else:
-            cross_correlations_pred.append(cross_correlations[i])
-            distances_pred.append(labels[i])
+    MLPClassifierBase.MLPClassifier.export = export
 
-
-    print("Writing enumerated distances to file...")
-    # with open(PREDICTION_CLASSES_FILE_FORMAT.format(datetime.utcnow()),'w') as f:
-    #     json.dump(enumerated_distances, f)
-
-    MLPClassifier.export = export
-    clf = MLPClassifier(solver='lbfgs',
-                        hidden_layer_sizes=800,
-                        alpha=1e-05,
-                        random_state=1,
-                        max_iter=1000)
+    clf = MLP(solver='lbfgs',
+              hidden_layer_sizes=500,
+              alpha=1e-05,
+              random_state=rand_state,
+              max_iter=4000)
     print("Learning...")
-    clf.fit(cross_correlations_train, distances_train)
+    clf.fit(cc_train, dst_train)
 
-    labels_pred = clf.predict(cross_correlations_pred)
-
-    # labels_truth = labels[1: len(cross_correlations) - 1: 2]
-    num_flase = 0
-    for i in range(1, len(labels_pred)):
-        if distances_pred[i] != labels_pred[i]:
-            num_flase += 1
-
-    print("num false: ", num_flase)
-    print("num samples ", len(labels_pred))
-    print("percentage ", num_flase / len(labels_pred))
+    predicted_distances = np.array(clf.predict(cc_test))
+    test_score = np.mean(dst_test == predicted_distances)
+    print("Test score is {0:.2f}%".format(100 * test_score))
 
     print("Exporting weights...")
     porter = Porter(clf, language='java')

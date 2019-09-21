@@ -1,10 +1,3 @@
-# this needs to be copied to sklearn_porter\estimator\classifier\MLPClassifier\__init__.py
-# instead of the export function so that we write the weights and bias to a file
-
-# David: no need to copy it, just replace it like this:
-# from sklearn.neural_network import MLPClassifier
-# from MLPClassifierAdjust import export
-# MLPClassifier.export = export
 import os
 
 import json
@@ -64,23 +57,19 @@ def export(self, class_name, method_name, export_data=False,
     # Weights:
     self.coefficients = est.coefs_
 
-    with open('MLPWeights.txt', 'w') as f:
-        f.write('[')
-        json.dump(self.coefficients[0].tolist(), f)
-        f.write(',')
-        json.dump(self.coefficients[1].tolist(), f)
-        f.write(']')
-    print("Exported MLPWeights.txt")
+    _coefs = [c.tolist() for c in self.coefficients]
+    with open('MLPWeights.json', 'w') as f:
+        json.dump(_coefs, f)
+
+    print("Exported MLPWeights.json")
     # Bias:
     self.intercepts = est.intercepts_
 
-    with open('MLPbias.txt', 'w') as f:
-        f.write('[')
-        json.dump(self.intercepts[0].tolist(), f)
-        f.write(',')
-        json.dump(self.intercepts[1].tolist(), f)
-        f.write(']')
-    print("Exported MLPbias.txt")
+    _intercepts = [c.tolist() for c in self.intercepts]
+    with open('MLPbias.json', 'w') as f:
+        json.dump(_intercepts, f)
+
+    print("Exported MLPbias.json")
     # Binary or multiclass classifier?
     self.is_binary = self.n_outputs == 1
     self.prefix = 'binary' if self.is_binary else 'multi'
