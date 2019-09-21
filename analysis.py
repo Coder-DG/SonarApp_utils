@@ -15,14 +15,14 @@ from MLPClassifierAdjust import export
 
 CHIRP_DURATION = 0.01
 SAMPLE_RATE = 44100
-F_START = 8000
-F_END = 8000
+F_START = 3000
+F_END = F_START
 JAVA_SHORT_MAX = 32767
 BASE_SOUND_SPEED = 331.3
 SOUND_SPEED_COEF = 0.606
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
-PREFIX = 'david_garage_test_location.3.0m.'
+PREFIX = 'david_garage_test_location.0.0m.'
 
 
 def get_speed_of_sound(temp):

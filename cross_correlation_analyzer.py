@@ -9,8 +9,9 @@ SAMPLE_NUMBER = 15
 def get_distances(cc,
                   threshold=2e9,
                   distance=int(
-                      analysis.CHIRP_DURATION * analysis.SAMPLE_RATE * 0.5)):
-    speed_of_sound = analysis.get_speed_of_sound(25)
+                      analysis.CHIRP_DURATION * analysis.SAMPLE_RATE * 0.5),
+                  temp=25):
+    speed_of_sound = analysis.get_speed_of_sound(temp)
     peaks, _ = signal.find_peaks(
         cc,
         height=threshold,

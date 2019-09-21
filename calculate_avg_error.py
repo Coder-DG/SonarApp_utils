@@ -39,7 +39,7 @@ def main():
     scipy_errors = []
     prediction_errors = []
 
-    distances = np.arange(start_distance, stop_distance, 0.1)[:-1]
+    distances = np.arange(start_distance, stop_distance, 0.1)
     for dst in distances:
         scipy_avg, prediction_avg = get_avg(dst)
 
