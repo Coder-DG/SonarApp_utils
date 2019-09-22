@@ -14,13 +14,14 @@ def main():
         an.SAMPLE_RATE * (holder_distance * 2 / sound_of_speed))
     distance = int(an.CHIRP_DURATION * an.SAMPLE_RATE * 0.5
                    + frames_to_reach_phone_holder)
+    prefix = 'david_living_room_shelf'
 
     start_distance = 1.0
     # vvv Exclusive vvv
-    stop_distance = 5.0
+    step = 0.5
 
     def get_avg(dst):
-        an.PREFIX = "david_alley.{0:.1f}m.".format(dst)
+        an.PREFIX = "{0}.{1:.1f}m.".format(prefix, dst)
         scipy_distances = []
         prediction_distances = []
         for sample_number in range(1, 21):
@@ -39,7 +40,7 @@ def main():
     scipy_errors = []
     prediction_errors = []
 
-    distances = np.arange(start_distance, stop_distance, 0.1)
+    distances = np.arange(start_distance, stop_distance, step)
     for dst in distances:
         scipy_avg, prediction_avg = get_avg(dst)
 
