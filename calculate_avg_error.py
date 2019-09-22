@@ -6,7 +6,7 @@ from scipy import signal
 
 
 def main():
-    temp = 19
+    temp = 23
     sound_of_speed = an.get_speed_of_sound(temp)
     threshold = 10.0 ** 0.85
     holder_distance = 0.35
@@ -18,6 +18,7 @@ def main():
 
     start_distance = 1.0
     # vvv Exclusive vvv
+    stop_distance = 4.4
     step = 0.5
 
     def get_avg(dst):
