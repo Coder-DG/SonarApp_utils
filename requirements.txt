@@ -7,3 +7,4 @@ scipy
 sklearn
 sklearn_porter
 pandas
+pickle

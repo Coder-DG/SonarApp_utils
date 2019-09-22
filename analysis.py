@@ -1,6 +1,7 @@
 import os
 
 import json
+import pickle
 import numpy as np
 # import pandas as pd
 import matplotlib.pyplot as plt
@@ -157,7 +158,7 @@ def get_graph_figure(y, title, markers=None, x=None, fig=None):
     ax.set_ylabel('Amplitude')
     ax.set_title(title)
     ax.xaxis.set_ticks(range(0, len(x), 50))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
     plt.xticks(rotation=90)
     if not markers:
         ax.plot(x, y)
@@ -174,9 +175,17 @@ if __name__ == '__main__':
     distances_trimmed = np.array(
         [int(10 * float(distance[:-1])) for distance in distances])
 
-    print("Splitting data to test and ")
+    longest_cc = max(len(i) for i in cross_correlations)
+    with open("longest_cc", "w") as f:
+        f.write(str(longest_cc))
+
+    padded_cross_correlations = []
+    for cc in cross_correlations:
+        padded_cross_correlations.append(cc + [0] * (longest_cc - len(cc)))
+
+    print("Splitting data to test and training.")
     cc_train, cc_test, dst_train, dst_test = train_test_split(
-        cross_correlations,
+        padded_cross_correlations,
         distances_trimmed,
         test_size=0.3,
         random_state=rand_state)
@@ -184,12 +193,16 @@ if __name__ == '__main__':
     MLPClassifierBase.MLPClassifier.export = export
 
     clf = MLP(solver='lbfgs',
-              hidden_layer_sizes=800,
+              hidden_layer_sizes=500,
               alpha=1e-05,
               random_state=rand_state,
-              max_iter=1000)
+              max_iter=4000)
     print("Learning...")
     clf.fit(cc_train, dst_train)
+
+    print("Saving MLP instance to file...")
+    with open("mlp_instance", "wb") as f:
+        pickle.dump(clf, f)
 
     predicted_distances = np.array(clf.predict(cc_test))
     test_score = np.mean(dst_test == predicted_distances)
