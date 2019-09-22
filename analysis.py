@@ -24,6 +24,8 @@ SOUND_SPEED_COEF = 0.606
 CUT_OFF = int(SAMPLE_RATE * (CHIRP_DURATION + 13.0 / BASE_SOUND_SPEED))
 SAMPLES_DIR = 'samples'
 PREFIX = 'david_garage_test_location.0.0m.'
+MLP_INSTANCE_FILE = 'mlp_instance'
+LONGEST_CC_FILE = 'longest_cc'
 
 
 def get_speed_of_sound(temp):
@@ -75,10 +77,13 @@ def get_chirp():
 #     print(df)
 
 
-def get_training_data():
+def get_training_data(filter_func=lambda _: True):
     _cross_correlations = []
     dst_labels = []
     for filename in os.listdir(SAMPLES_DIR):
+        if not filter_func(filename):
+            continue
+
         with open(os.path.join(SAMPLES_DIR, filename), 'r') as f:
             sample = json.load(f)
             dst_label = sample['real_distance']
@@ -170,13 +175,15 @@ def get_graph_figure(y, title, markers=None, x=None, fig=None):
 if __name__ == '__main__':
     rand_state = 1
     print("Loading training data...")
-    cross_correlations, distances = get_training_data()  # input cc
+    cross_correlations, distances = get_training_data(
+        filter_func=lambda filename: 'alley' in filename
+    )  # input cc
     # Convert distance to centimeters
     distances_trimmed = np.array(
         [int(10 * float(distance[:-1])) for distance in distances])
 
     longest_cc = max(len(i) for i in cross_correlations)
-    with open("longest_cc", "w") as f:
+    with open(LONGEST_CC_FILE, "w") as f:
         f.write(str(longest_cc))
 
     padded_cross_correlations = []
@@ -201,7 +208,7 @@ if __name__ == '__main__':
     clf.fit(cc_train, dst_train)
 
     print("Saving MLP instance to file...")
-    with open("mlp_instance", "wb") as f:
+    with open(MLP_INSTANCE_FILE, "wb") as f:
         pickle.dump(clf, f)
 
     predicted_distances = np.array(clf.predict(cc_test))
