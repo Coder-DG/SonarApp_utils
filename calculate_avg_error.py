@@ -44,7 +44,7 @@ def main():
             padded_cc = cc[:longest_cc] + [0] * (
                     longest_cc - len(cc[:longest_cc])
             )
-            mlp_prediction = mlp_instance.predict(padded_cc)
+            mlp_prediction = mlp_instance.predict([padded_cc])[0]
             mlp_distances.append(mlp_prediction)
 
             time_delta, speed_of_sound, half_distance, peaks = \
@@ -69,7 +69,7 @@ def main():
         prediction_error = np.abs(1 - dst / prediction_avg)
         prediction_errors.append(prediction_error)
 
-        mlp_prediction_error = np.abs(1 - dst / mlp_avg)
+        mlp_prediction_error = np.abs(1 - 10.0 * dst / mlp_avg)
         mlp_prediction_errors.append(mlp_prediction_error)
 
         print(
@@ -83,7 +83,7 @@ def main():
                       scipy_error * 100,
                       prediction_avg,
                       prediction_error * 100,
-                      mlp_avg,
+                      mlp_avg / 10.0,
                       mlp_prediction_error * 100)
         )
 
