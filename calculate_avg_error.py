@@ -6,7 +6,7 @@ import cross_correlation_analyzer as cca
 
 
 def main():
-    temp = 23
+    temp = 19
     sound_of_speed = an.get_speed_of_sound(temp)
     threshold = 10.0 ** 0.85
     holder_distance = 0.35
