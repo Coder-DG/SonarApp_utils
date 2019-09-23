@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
 
 import analysis as an
 import cross_correlation_analyzer as cca
@@ -17,7 +18,7 @@ def main():
     locations = [
         'david_alley',
         'david_tv_wall',
-        'david_living_room_shelf'
+        'david_hospital',
     ]
 
     with open(an.LONGEST_CC_FILE, "r") as f:
@@ -26,7 +27,7 @@ def main():
     with open(an.MLP_INSTANCE_FILE, "rb") as f:
         mlp_instance = pickle.load(f)
 
-    start_distance = 2.2
+    start_distance = 1.0
     # vvv Exclusive vvv
     stop_distance = 5.09
     step = 0.1
